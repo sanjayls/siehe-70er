@@ -631,51 +631,6 @@ export default function App() {
         </section>
 
         <div className="research-layout">
-          <aside className="panel research-nav">
-            <div className="panel-header compact">
-              <h2>Forschungsraum</h2>
-              <p>Navigation nach Erkenntnisebenen statt nach UI-Komponenten.</p>
-            </div>
-
-            <div className="nav-list">
-              {navSections.map((section) => {
-                const expanded = expandedNav[section.key];
-                const isActive = activeSection === section.key;
-
-                return (
-                  <div key={section.key} className="nav-group">
-                    <button
-                      className={`nav-group-button ${isActive ? 'active' : ''}`}
-                      onClick={() => setActiveSection(section.key)}
-                    >
-                      <span>{section.title}</span>
-                      <span
-                        className="nav-toggle"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleNav(section.key);
-                        }}
-                      >
-                        {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                      </span>
-                    </button>
-
-                    {expanded && section.items && (
-                      <div className="nav-sublist">
-                        {section.items.map((item) => (
-                          <div key={item} className="nav-subitem">
-                            {item}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </aside>
-
-          <main className="stack">
             {activeSection === 'overview' && (
               <section className="panel">
                 <div className="panel-header">
