@@ -1,18 +1,26 @@
 import React, { useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
 import {
-  AlertTriangle,
   BookOpen,
-  Clock3,
   Database,
   FileText,
-  Filter,
-  MapPin,
   Search,
   ShieldCheck,
+  AlertTriangle,
+  Clock3,
+  MapPin,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 
 type ClaimStatus = 'supported' | 'supported_with_caution' | 'open_caution';
+
+type SectionKey =
+  | 'overview'
+  | 'claims'
+  | 'sources'
+  | 'evidence'
+  | 'gaps'
+  | 'method';
 
 type Claim = {
   id: string;
@@ -58,9 +66,9 @@ type Gap = {
 const claims: Claim[] = [
   {
     id: 'C-001',
-    title: 'Sanierungs- und Wiederaufstiegslogik unter Edy Renggli',
+    title: 'Institutionelle Reorganisation unter Präsidium Renggli',
     statement:
-      'Mit dem Amtsantritt von Edy Renggli 1969 verband der FC Luzern sportliche Ambition mit dem Ziel, die finanzielle Schieflage zu ordnen.',
+      'Mit dem Amtsantritt von Edy Renggli (1969) erfolgte eine Verbindung von sportlicher Neuausrichtung und finanzieller Stabilisierung.',
     status: 'supported',
     period: '1969',
     scope: 'FC Luzern',
@@ -68,13 +76,13 @@ const claims: Claim[] = [
     tags: ['Governance', 'Finanzen', 'Präsidium'],
     sourceIds: ['S-001', 'S-002'],
     notes:
-      'Der Claim ist innerhalb der Vereinsüberlieferung gut gestützt, benötigt für institutionelles Niveau jedoch zusätzliche Gegenprüfung durch zeitgenössische Presse.',
+      'Der Claim wird innerhalb der Vereinsüberlieferung klar gestützt. Für institutionsgeschichtliche Belastbarkeit sind zusätzliche zeitgenössische Gegenquellen weiterhin sinnvoll.',
   },
   {
     id: 'C-002',
-    title: 'Klassenverbleib 1970/71 bei struktureller Fragilität',
+    title: 'Ligaerhalt bei fortbestehender struktureller Fragilität',
     statement:
-      'Der Ligaerhalt 1970/71 beseitigte die institutionellen und finanziellen Spannungen des FC Luzern nicht.',
+      'Der sportliche Verbleib in der Liga 1970/71 beseitigte die institutionellen und finanziellen Spannungen des Vereins nicht.',
     status: 'supported_with_caution',
     period: '1970/71',
     scope: 'FC Luzern',
@@ -82,13 +90,13 @@ const claims: Claim[] = [
     tags: ['Sport', 'Institutionen', 'Risiko'],
     sourceIds: ['S-001', 'S-004'],
     notes:
-      'Sportlicher Befund ist klar. Der Zusammenhang mit institutioneller Fragilität ist eine vorsichtige Synthese aus mehreren Einzelquellen.',
+      'Der sportliche Befund ist gesichert. Die institutionelle Lesart ist eine quellennahe Synthese, aber keine wörtlich dokumentierte Selbstbeschreibung des Vereins.',
   },
   {
     id: 'C-003',
-    title: 'Flower-Power-Trikots als Sichtbarkeits- und Distinktionsversuch',
+    title: 'Mediale Sichtbarkeit der Flower-Power-Trikots',
     statement:
-      'Die farbigen Luzerner Trikots von 1970 sind als kultureller Distinktions- und Sichtbarkeitsversuch belegbar, nicht aber als ökonomisch wirksame Sanierungsmaßnahme.',
+      'Die farbigen Luzerner Trikots von 1970 sind als kultureller und medialer Distinktionsversuch belegt, nicht jedoch als nachweisbar wirksame Sanierungsmassnahme.',
     status: 'supported',
     period: '1970',
     scope: 'FC Luzern',
@@ -96,13 +104,13 @@ const claims: Claim[] = [
     tags: ['Kultur', 'Medien', 'Symbolik'],
     sourceIds: ['S-003', 'S-006'],
     notes:
-      'Die Symbolik ist belegbar. Jeder weitergehende Nachweis eines finanziellen Effekts fehlt bislang.',
+      'Die symbolische Aufladung ist gut belegt. Ein belastbarer Nachweis finanzieller Wirkung liegt bislang nicht vor.',
   },
   {
     id: 'C-004',
-    title: 'Abstieg 1971/72 als Teil einer tieferen Strukturkrise',
+    title: 'Abstieg 1971/72 als Ausdruck tieferer Strukturprobleme',
     statement:
-      'Der Abstieg 1971/72 kann im Licht der Quellen als sportlicher Ausdruck einer tieferen organisatorischen und finanziellen Fragilität gelesen werden.',
+      'Der Abstieg 1971/72 kann als sportlicher Ausdruck organisatorischer und finanzieller Fragilität interpretiert werden.',
     status: 'supported_with_caution',
     period: '1971/72',
     scope: 'FC Luzern',
@@ -110,13 +118,13 @@ const claims: Claim[] = [
     tags: ['Abstieg', 'Organisation', 'Finanzen'],
     sourceIds: ['S-004', 'S-007'],
     notes:
-      'Der Abstieg ist gesichert. Die strukturgeschichtliche Deutung bleibt Interpretation, wenn auch gut begründet.',
+      'Der Abstieg selbst ist unstrittig. Die strukturgeschichtliche Deutung bleibt Interpretation, wird jedoch durch mehrere Quellen gestützt.',
   },
   {
     id: 'C-005',
-    title: 'Prekäre Finanzlage und Teil-Ausverkauf des Kaders',
+    title: 'Prekäre Finanzlage und personelle Notmassnahmen',
     statement:
-      '1974/75 zwang die prekäre Finanzlage den FC Luzern zu personellen Abgaben und Notmaßnahmen.',
+      'In der Saison 1974/75 führte die prekäre Finanzlage zu personellen Abgaben und Notmassnahmen im Kaderbereich.',
     status: 'supported',
     period: '1974/75',
     scope: 'FC Luzern',
@@ -124,26 +132,27 @@ const claims: Claim[] = [
     tags: ['Liquidität', 'Kader', 'Krise'],
     sourceIds: ['S-007', 'S-008', 'S-009'],
     notes:
-      'Starker Claim auf Basis mehrerer Quellenebenen; dennoch weiterhin Ausbau mit wörtlichen Zeitungszitaten sinnvoll.',
+      'Starker Claim mit mehrschichtiger Quellenstützung. Eine weitere Präzisierung durch exakte Pressezitate bleibt wünschenswert.',
   },
   {
     id: 'C-006',
-    title: 'Akute Überschuldung und drohender Konkurs 1974/75',
+    title: 'Dokumentierte Konkursgefahr 1974/75',
     statement:
-      'Spätestens 1974/75 ist beim FC Luzern eine akute Überschuldung bzw. Konkursgefahr klar dokumentiert.',
+      'Spätestens 1974/75 ist eine akute Überschuldungs- bzw. Konkursgefährdung des FC Luzern quellenbasiert dokumentiert.',
     status: 'supported',
     period: '1974/75',
     scope: 'FC Luzern',
     confidence: 0.92,
     tags: ['Überschuldung', 'Konkursgefahr', 'Finanzgeschichte'],
     sourceIds: ['S-008', 'S-009'],
-    notes: 'Dies ist einer der robustesten Claims des Dossiers.',
+    notes:
+      'Dies gehört zu den am stärksten gestützten Claims des Dossiers.',
   },
   {
     id: 'C-007',
-    title: 'Darlehensgesuch an die Stadt Luzern',
+    title: 'Politisch verhandeltes Darlehensgesuch an die Stadt Luzern',
     statement:
-      'Der FC Luzern ersuchte die Stadt Luzern um finanzielle Hilfe; das Darlehensgesuch wurde politisch verhandelt und abgelehnt.',
+      'Der FC Luzern ersuchte die Stadt Luzern um finanzielle Unterstützung; das Darlehensgesuch wurde kommunalpolitisch verhandelt und nicht bewilligt.',
     status: 'supported',
     period: '1975',
     scope: 'FC Luzern / Stadt Luzern',
@@ -151,26 +160,27 @@ const claims: Claim[] = [
     tags: ['Stadtpolitik', 'Darlehen', 'Öffentliche Hilfe'],
     sourceIds: ['S-009', 'S-010'],
     notes:
-      'Hoher Erkenntniswert, weil hier Vereins- und Stadtgeschichte direkt zusammenfallen.',
+      'Dieser Claim ist institutionell besonders relevant, da er Vereinsgeschichte und kommunalpolitische Ebene direkt verbindet.',
   },
   {
     id: 'C-008',
-    title: 'Rundschau 1971 als Makrokontext, nicht als FCL-Spezifikum',
+    title: 'SRF Rundschau 1971 als Makrokontext',
     statement:
-      'Die SRF-Rundschau von 1971 belegt die nationale Schuldenproblematik im Schweizer Fussball, kann aber ohne zusätzliche Luzern-spezifische Evidenz nicht direkt als FCL-Beweis dienen.',
+      'Die SRF-Rundschau von 1971 dokumentiert eine nationale Schuldenproblematik im Schweizer Fussball, kann aber nicht ohne Zusatzquellen als direkter Nachweis für den FC Luzern dienen.',
     status: 'supported',
     period: '1971',
     scope: 'Schweiz',
     confidence: 0.87,
     tags: ['SRF', 'Makrokontext', 'Methodik'],
     sourceIds: ['S-011'],
-    notes: 'Methodisch zentral, um Fehlableitungen zu vermeiden.',
+    notes:
+      'Methodisch zentral zur Abgrenzung zwischen Kontextquelle und club-spezifischem Beleg.',
   },
   {
     id: 'C-009',
-    title: 'Ambition ohne ausreichend kapitalisierte Erlösbasis',
+    title: 'Ambition ohne deckungsgleiche Erlösbasis',
     statement:
-      'Die Quellen legen nahe, dass sportliche Ambition und finanzielle Tragfähigkeit beim FC Luzern Anfang der 1970er nicht deckungsgleich waren.',
+      'Die Quellen legen nahe, dass sportliche Ambition und ökonomische Tragfähigkeit beim FC Luzern Anfang der 1970er Jahre nicht deckungsgleich waren.',
     status: 'supported_with_caution',
     period: '1969–1975',
     scope: 'FC Luzern',
@@ -178,13 +188,13 @@ const claims: Claim[] = [
     tags: ['Ökonomie', 'Erlösmodell', 'Strategie'],
     sourceIds: ['S-001', 'S-007', 'S-008'],
     notes:
-      'Analytisch stark, aber aus mehreren Quellen synthetisiert. Kein Einzelbeleg formuliert dies exakt so.',
+      'Analytisch tragfähig, aber als Synthese nicht auf ein einzelnes Zitat reduzierbar.',
   },
   {
     id: 'C-010',
-    title: 'Kudi Müller als Epochenfigur, nicht als Schuldenbeweis',
+    title: 'Kudi Müller als sporthistorisch relevante, aber ökonomisch begrenzte Figur',
     statement:
-      'Kudi Müller ist für die Epoche sporthistorisch relevant, trägt aber den ökonomischen Krisenclaim allein nicht.',
+      'Kudi Müller ist für die sporthistorische Einordnung der Epoche relevant, trägt den ökonomischen Krisenclaim jedoch nicht allein.',
     status: 'open_caution',
     period: '1970–1972',
     scope: 'FC Luzern',
@@ -192,13 +202,13 @@ const claims: Claim[] = [
     tags: ['Kudi Müller', 'Methodik', 'Personalisierung'],
     sourceIds: ['S-005', 'S-011'],
     notes:
-      'Wichtiger methodischer Korrekturclaim gegen narrative Überdehnung.',
+      'Wichtiger Korrekturclaim gegen eine überpersonalisierte Krisenerzählung.',
   },
   {
     id: 'C-011',
-    title: 'Institutionelle Krise statt rein sportlicher Krise',
+    title: 'Institutionelle Krise statt bloss sportlicher Schwächephase',
     statement:
-      'Für den FC Luzern der frühen 1970er ist eher von einer institutionellen Krise als von einer bloß sportlichen Schwächephase zu sprechen.',
+      'Für den FC Luzern der frühen 1970er Jahre ist eher von einer institutionellen Krise als von einer bloss sportlichen Schwächephase zu sprechen.',
     status: 'supported_with_caution',
     period: '1969–1975',
     scope: 'FC Luzern',
@@ -206,7 +216,7 @@ const claims: Claim[] = [
     tags: ['Institutionen', 'Governance', 'Langfristigkeit'],
     sourceIds: ['S-001', 'S-007', 'S-008', 'S-009'],
     notes:
-      'Als Synthese derzeit tragfähig. Für Publikation auf hohem Niveau sollten mehr externe Primärquellen ergänzt werden.',
+      'Als Synthese derzeit gut vertretbar; für Publikationsniveau sollten zusätzliche externe Primärquellen ergänzt werden.',
   },
 ];
 
@@ -215,12 +225,12 @@ const sources: Source[] = [
     id: 'S-001',
     title: '120 Jahre FC Luzern – 1961–1971',
     type: 'Vereinschronik',
-    year: '2021 (überliefert für 1969–1971)',
+    year: '2021 / rückblickend',
     locality: 'Luzern',
-    reliability: 'mittel-hoch',
+    reliability: 'mittel–hoch',
     relevance: 'hoch',
     summary:
-      'Dokumentiert die Lage bei Amtsantritt Edy Rengglis, sportliche Zielsetzungen und finanzielle Schieflage des Vereins.',
+      'Dokumentiert sportliche Zielsetzungen, organisatorische Neuordnung und Hinweise auf finanzielle Schieflagen beim Amtsantritt Rengglis.',
   },
   {
     id: 'S-002',
@@ -231,7 +241,7 @@ const sources: Source[] = [
     reliability: 'mittel',
     relevance: 'hoch',
     summary:
-      'Frühe Berichterstattung zur Neuordnung des Vereins, Donatoren und Wiederaufstiegsrhetorik.',
+      'Frühe Berichterstattung zur Neuordnung des Vereins, zu Donatoren und Wiederaufstiegsambitionen.',
   },
   {
     id: 'S-003',
@@ -240,9 +250,9 @@ const sources: Source[] = [
     year: '1970',
     locality: 'Luzern',
     reliability: 'mittel',
-    relevance: 'mittel-hoch',
+    relevance: 'mittel–hoch',
     summary:
-      'Belegt die symbolische und mediale Aufladung des Vereinsauftritts im Herbst 1970.',
+      'Belegt die mediale Sichtbarkeit des ungewöhnlichen Vereinsauftritts im Jahr 1970.',
   },
   {
     id: 'S-004',
@@ -252,7 +262,8 @@ const sources: Source[] = [
     locality: 'Luzern / Schweiz',
     reliability: 'hoch',
     relevance: 'hoch',
-    summary: 'Absicherung des sportlichen Befunds zum Abstieg 1971/72.',
+    summary:
+      'Sichert den sportlichen Befund zum Abstieg 1971/72 ab.',
   },
   {
     id: 'S-005',
@@ -263,7 +274,7 @@ const sources: Source[] = [
     reliability: 'mittel',
     relevance: 'mittel',
     summary:
-      'Nützlich für Personenbezug, aber begrenzt für institutionenökonomische Claims.',
+      'Hilfreich für die sporthistorische Kontextualisierung, begrenzt belastbar für institutionenökonomische Aussagen.',
   },
   {
     id: 'S-006',
@@ -271,20 +282,21 @@ const sources: Source[] = [
     type: 'Erinnerungsquelle',
     year: 'später, rückblickend',
     locality: 'Luzern',
-    reliability: 'mittel-niedrig',
+    reliability: 'mittel–niedrig',
     relevance: 'mittel',
-    summary: 'Kulturell ergiebig, methodisch mit Vorsicht zu verwenden.',
+    summary:
+      'Kulturell ergiebig, methodisch aber nur mit Vorsicht zu verwenden.',
   },
   {
     id: 'S-007',
     title: '120 Jahre FC Luzern – 1971–1981',
     type: 'Vereinschronik',
-    year: '2021 (überliefert für 1971–1981)',
+    year: '2021 / rückblickend',
     locality: 'Luzern',
-    reliability: 'mittel-hoch',
+    reliability: 'mittel–hoch',
     relevance: 'hoch',
     summary:
-      'Enthält die robustesten Hinweise auf prekäre Finanzlage, Teil-Ausverkauf und politische Hilfeersuchen.',
+      'Enthält zentrale Hinweise auf prekäre Finanzlage, personelle Abgänge und kommunale Hilfeersuchen.',
   },
   {
     id: 'S-008',
@@ -294,7 +306,8 @@ const sources: Source[] = [
     locality: 'Luzern',
     reliability: 'hoch',
     relevance: 'hoch',
-    summary: 'Zeitgenössische Stützung für akute finanzielle Zuspitzung.',
+    summary:
+      'Zeitgenössische Stützung für die finanzielle Zuspitzung.',
   },
   {
     id: 'S-009',
@@ -305,7 +318,7 @@ const sources: Source[] = [
     reliability: 'hoch',
     relevance: 'hoch',
     summary:
-      'Zentral für die institutionelle Verflechtung von Club und Stadtpolitik.',
+      'Zentrale Quelle für die Verflechtung von Vereinskrise und kommunaler Öffentlichkeit.',
   },
   {
     id: 'S-010',
@@ -315,7 +328,8 @@ const sources: Source[] = [
     locality: 'Stadt Luzern',
     reliability: 'hoch',
     relevance: 'hoch',
-    summary: 'Methodisch besonders wertvoll, da extern zur Vereinsüberlieferung.',
+    summary:
+      'Methodisch besonders wertvoll, da ausserhalb der Vereinsüberlieferung.',
   },
   {
     id: 'S-011',
@@ -324,7 +338,7 @@ const sources: Source[] = [
     year: '1971',
     locality: 'Schweiz',
     reliability: 'hoch',
-    relevance: 'mittel-hoch',
+    relevance: 'mittel–hoch',
     summary:
       'Robuster Makrokontext zur nationalen Kosten- und Schuldenproblematik, aber ohne direkte Luzern-Spezifik.',
   },
@@ -339,7 +353,7 @@ const evidence: Evidence[] = [
     locality: 'Luzern',
     temporalProximity: 'mittel',
     text:
-      'Die Vereinsüberlieferung beschreibt Edy Rengglis Amtsantritt 1969 ausdrücklich entlang der Doppelaufgabe Wiederaufstieg und Ordnung der finanziellen Schieflage.',
+      'Die Vereinsüberlieferung beschreibt den Amtsantritt Rengglis entlang einer Doppelbewegung aus Wiederaufstiegsambition und finanzieller Ordnung.',
   },
   {
     id: 'E-002',
@@ -349,7 +363,7 @@ const evidence: Evidence[] = [
     locality: 'Luzern',
     temporalProximity: 'hoch',
     text:
-      'Die Berichterstattung zu den farbigen Trikots von 1970 bestätigt deren mediale Wirkung und symbolische Sichtbarkeit.',
+      'Zeitgenössische Berichte bestätigen die symbolische und mediale Wirkung der farbigen Trikots.',
   },
   {
     id: 'E-003',
@@ -359,7 +373,7 @@ const evidence: Evidence[] = [
     locality: 'Luzern',
     temporalProximity: 'mittel',
     text:
-      'Für 1974/75 wird eine prekäre Finanzlage genannt, die einen Teil-Ausverkauf des Kaders erforderlich gemacht habe.',
+      'Für 1974/75 wird eine prekäre Finanzlage genannt, die personelle Abgaben notwendig gemacht habe.',
   },
   {
     id: 'E-004',
@@ -368,7 +382,8 @@ const evidence: Evidence[] = [
     kind: 'press_excerpt',
     locality: 'Luzern',
     temporalProximity: 'hoch',
-    text: 'Zeitgenössische Lokalberichte sprechen von Überschuldung und realer Konkursgefahr.',
+    text:
+      'Zeitgenössische Lokalberichte sprechen von realer Konkursgefahr und Überschuldung.',
   },
   {
     id: 'E-005',
@@ -377,7 +392,8 @@ const evidence: Evidence[] = [
     kind: 'press_excerpt',
     locality: 'Stadt Luzern',
     temporalProximity: 'hoch',
-    text: 'Das Gesuch um ein städtisches Darlehen wurde öffentlich diskutiert und scheiterte politisch.',
+    text:
+      'Das Gesuch um ein städtisches Darlehen wurde öffentlich diskutiert und politisch nicht bewilligt.',
   },
   {
     id: 'E-006',
@@ -387,7 +403,7 @@ const evidence: Evidence[] = [
     locality: 'Schweiz',
     temporalProximity: 'hoch',
     text:
-      'Die SRF-Rundschau benennt 1971 steigende Spielerlöhne und Transfersummen als Ursachen der Schuldenproblematik im Schweizer Fussball.',
+      'Die Rundschau benennt steigende Spielerlöhne und Transferkosten als Ursachen einer breiteren Schuldenproblematik im Schweizer Fussball.',
   },
   {
     id: 'E-007',
@@ -397,45 +413,84 @@ const evidence: Evidence[] = [
     locality: 'Stadt Luzern',
     temporalProximity: 'hoch',
     text:
-      'Die Verhandlung im kommunalen Raum zeigt, dass die Krise des Vereins über den sportlichen Bereich hinaus als öffentliches Problem sichtbar wurde.',
+      'Die kommunale Debatte zeigt, dass die Vereinskrise über den sportlichen Bereich hinaus als öffentlich relevantes Problem sichtbar wurde.',
   },
 ];
 
 const gaps: Gap[] = [
   {
     id: 'G-001',
-    title: 'Verbatim-Zitate aus Luzerner Zeitungen',
+    title: 'Verbatim-Zitate aus Luzerner Tagespresse',
     priority: 'hoch',
     detail:
-      'Für Publikationsniveau fehlen exakte Wortlaute mit Datum, Seite und Zeitungstitel aus Luzerner Tagblatt, Vaterland oder LNN.',
+      'Für belastbares Publikationsniveau fehlen exakte Wortlaute mit Zeitung, Datum und Seitenangabe.',
   },
   {
     id: 'G-002',
     title: 'Kommunalprotokolle zum Darlehensgesuch',
     priority: 'hoch',
     detail:
-      'Der politische Vorgang sollte mit Ratsprotokollen oder offiziellen Vorlagen externalisiert werden.',
+      'Die politische Verhandlung sollte mit Ratsprotokollen oder offiziellen Vorlagen extern abgesichert werden.',
   },
   {
     id: 'G-003',
-    title: 'Transkript oder Sichtung der Rundschau 1971',
+    title: 'Transkript oder Vollsichtung der Rundschau 1971',
     priority: 'hoch',
     detail:
-      'Der Makrokontext ist stark, aber ohne vollständiges Transkript bleibt die TV-Quelle nur eingeschränkt granular nutzbar.',
+      'Der Makrokontext ist stark, aber ohne vollständiges Transkript nur begrenzt granular auswertbar.',
   },
   {
     id: 'G-004',
-    title: 'Zahlen zu Zuschauererlösen, Löhnen, Transfers',
-    priority: 'mittel-hoch',
+    title: 'Quantitative Reihen zu Löhnen, Erlösen, Transfers',
+    priority: 'mittel–hoch',
     detail:
-      'Der strukturelle Krisenclaim wäre mit quantitativen Reihen deutlich stärker.',
+      'Der strukturelle Krisenclaim wäre mit quantitativen Reihen deutlich präziser zu modellieren.',
   },
   {
     id: 'G-005',
-    title: 'Externe Gegenquellen zur Vereinschronik',
+    title: 'Systematische Gegenprüfung der Vereinschroniken',
     priority: 'mittel',
     detail:
-      'Die Vereinsüberlieferung ist stark, sollte aber systematisch mit unabhängiger Presse und Verwaltung gegengeprüft werden.',
+      'Die Vereinsüberlieferung sollte stärker gegen unabhängige Presse- und Verwaltungsquellen gespiegelt werden.',
+  },
+];
+
+type NavSection = {
+  key: SectionKey;
+  title: string;
+  items?: string[];
+};
+
+const navSections: NavSection[] = [
+  {
+    key: 'overview',
+    title: 'Übersicht',
+    items: ['Projektbeschreibung', 'Epistemischer Status'],
+  },
+  {
+    key: 'claims',
+    title: 'Claims',
+    items: ['Claim Index', 'Thematische Ordnung', 'Zeitliche Einordnung'],
+  },
+  {
+    key: 'sources',
+    title: 'Quellen & Provenienz',
+    items: ['Primär- und Sekundärquellen', 'Lokalität', 'Reliabilität'],
+  },
+  {
+    key: 'evidence',
+    title: 'Evidenzzuordnung',
+    items: ['Claim → Quelle', 'Evidenztyp', 'Temporale Nähe'],
+  },
+  {
+    key: 'gaps',
+    title: 'Forschungslücken',
+    items: ['Offene Validierung', 'Fehlende Dokumente'],
+  },
+  {
+    key: 'method',
+    title: 'Methodik',
+    items: ['Modell', 'Datenstruktur', 'Grenzen des Datensatzes'],
   },
 ];
 
@@ -452,18 +507,24 @@ function statusTone(status: ClaimStatus): string {
 
 function confidenceLabel(value: number): string {
   if (value >= 0.85) return 'hoch';
-  if (value >= 0.7) return 'mittel-hoch';
+  if (value >= 0.7) return 'mittel–hoch';
   if (value >= 0.55) return 'mittel';
   return 'offen';
 }
 
-type TabKey = 'claims' | 'sources' | 'gaps' | 'about';
-
 export default function App() {
+  const [activeSection, setActiveSection] = useState<SectionKey>('overview');
+  const [selectedClaim, setSelectedClaim] = useState(claims[0].id);
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | ClaimStatus>('all');
-  const [selectedClaim, setSelectedClaim] = useState(claims[0].id);
-  const [activeTab, setActiveTab] = useState<TabKey>('claims');
+  const [expandedNav, setExpandedNav] = useState<Record<string, boolean>>({
+    overview: true,
+    claims: true,
+    sources: false,
+    evidence: false,
+    gaps: false,
+    method: false,
+  });
 
   const filteredClaims = useMemo(() => {
     return claims.filter((claim) => {
@@ -473,273 +534,428 @@ export default function App() {
           .join(' ')
           .toLowerCase()
           .includes(query.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || claim.status === statusFilter;
+
+      const matchesStatus =
+        statusFilter === 'all' || claim.status === statusFilter;
+
       return matchesQuery && matchesStatus;
     });
   }, [query, statusFilter]);
 
   const activeClaim =
-    filteredClaims.find((claim) => claim.id === selectedClaim) ?? filteredClaims[0] ?? null;
+    filteredClaims.find((claim) => claim.id === selectedClaim) ??
+    filteredClaims[0] ??
+    null;
 
-  const activeEvidence = evidence.filter((item) => item.claimId === activeClaim?.id);
-  const activeSources = sources.filter((src) => activeClaim?.sourceIds.includes(src.id));
+  const activeClaimEvidence = evidence.filter(
+    (item) => item.claimId === activeClaim?.id
+  );
+
+  const activeClaimSources = sources.filter((src) =>
+    activeClaim?.sourceIds.includes(src.id)
+  );
+
+  function toggleNav(key: string) {
+    setExpandedNav((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
 
   return (
     <div className="page-shell">
       <div className="container">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="hero-grid"
-        >
-          <section className="panel hero-panel">
+        <section className="hero-grid">
+          <div className="panel">
             <div className="panel-header">
               <div className="eyebrow">
-                <Database size={14} /> Research Explorer · Claim / Evidence / Source Layer
+                <Database size={14} />
+                Forschungsinterface · Claim-basierte Rekonstruktion
               </div>
               <h1>FC Luzern – Strukturkrise 1969–1976</h1>
               <p className="lede">
-                Arbeitsfähiger Prototyp für ein institutionelles Forschungsinterface. Ziel ist nicht narrative Glättung,
-                sondern die sichtbare Trennung von Befund, Evidenz, Unsicherheit und Forschungslücke.
+                Forschungsinterface zur claim-basierten Rekonstruktion institutioneller,
+                sportlicher und finanzieller Entwicklungen. Darstellung von Claims,
+                Evidenzzuordnungen, Provenienz und Forschungslücken auf Basis historischer Quellen.
               </p>
             </div>
-            <div className="metric-grid">
-              <MetricCard icon={<ShieldCheck size={16} />} label="Claims" value={String(claims.length)} detail="institutionell formuliert" />
-              <MetricCard icon={<BookOpen size={16} />} label="Quellen" value={String(sources.length)} detail="lokal + national" />
-              <MetricCard icon={<FileText size={16} />} label="Evidence" value={String(evidence.length)} detail="claim-relevant" />
-              <MetricCard icon={<AlertTriangle size={16} />} label="Gaps" value={String(gaps.length)} detail="offene Validierung" />
-            </div>
-          </section>
 
-          <section className="panel status-panel">
+            <div className="metric-grid">
+              <MetricCard
+                icon={<ShieldCheck size={16} />}
+                label="Claims"
+                value={String(claims.length)}
+                detail="formal formulierte Aussagen"
+              />
+              <MetricCard
+                icon={<BookOpen size={16} />}
+                label="Quellen"
+                value={String(sources.length)}
+                detail="Primär- und Sekundärquellen"
+              />
+              <MetricCard
+                icon={<FileText size={16} />}
+                label="Evidenzzuordnungen"
+                value={String(evidence.length)}
+                detail="dokumentierte Claim-Bezüge"
+              />
+              <MetricCard
+                icon={<AlertTriangle size={16} />}
+                label="Forschungslücken"
+                value={String(gaps.length)}
+                detail="offene Validierungsbereiche"
+              />
+            </div>
+          </div>
+
+          <div className="panel">
             <div className="panel-header compact">
               <h2>Epistemischer Status</h2>
-              <p>Der Prototyp zeigt bereits einen belastbaren Layer für Luzern, aber noch keinen vollständigen Satz verifizierter Vollzitate.</p>
             </div>
             <div className="status-list">
-              <p><strong>Fakt:</strong> Mehrere Claims zu Finanzlage, Darlehensgesuch und Überschuldung sind tragfähig.</p>
-              <p><strong>Annahme:</strong> Die institutionelle Tiefenstruktur lässt sich mit weiterer Lokalpresse noch präziser modellieren.</p>
-              <p><strong>Interpretation:</strong> Der FCL ist ein lokaler Fall einer breiteren Transformationsphase des Schweizer Fussballs.</p>
+              <p>
+                <strong>Faktisch belegt:</strong> Mehrere voneinander unabhängige Quellen
+                stützen finanzielle Spannungen, Darlehensgesuche und Hinweise auf Überschuldung.
+              </p>
+              <p>
+                <strong>Annahmen:</strong> Die interne institutionelle Tiefenstruktur ist
+                nur teilweise rekonstruierbar.
+              </p>
+              <p>
+                <strong>Interpretation:</strong> Der Fall FC Luzern kann als lokaler Ausdruck
+                einer breiteren Transformationsphase des Schweizer Fussballs gelesen werden.
+              </p>
+              <p>
+                <strong>Evidenzqualität:</strong> mittel bis hoch; heterogene Quellenbasis,
+                jedoch noch unvollständige Archivabdeckung.
+              </p>
             </div>
-          </section>
-        </motion.div>
+          </div>
+        </section>
 
-        <nav className="tabs">
-          {[
-            ['claims', 'Claims'],
-            ['sources', 'Quellen'],
-            ['gaps', 'Research Gaps'],
-            ['about', 'Methodik'],
-          ].map(([key, label]) => (
-            <button
-              key={key}
-              className={activeTab === key ? 'tab active' : 'tab'}
-              onClick={() => setActiveTab(key as TabKey)}
-            >
-              {label}
-            </button>
-          ))}
-        </nav>
+        <div className="research-layout">
+          <aside className="panel research-nav">
+            <div className="panel-header compact">
+              <h2>Forschungsraum</h2>
+              <p>Navigation nach Erkenntnisebenen statt nach UI-Komponenten.</p>
+            </div>
 
-        {activeTab === 'claims' && (
-          <section className="claims-grid">
-            <aside className="panel sidebar-panel">
-              <div className="panel-header compact">
-                <h2>Claim Index</h2>
-                <p>Filter nach Text oder Evidenzstatus.</p>
-              </div>
+            <div className="nav-list">
+              {navSections.map((section) => {
+                const expanded = expandedNav[section.key];
+                const isActive = activeSection === section.key;
 
-              <div className="controls">
-                <label className="search-box">
-                  <Search size={16} />
-                  <input
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Claim, Zeitraum, Tag ..."
-                  />
-                </label>
-
-                <div className="select-block">
-                  <div className="select-label"><Filter size={14} /> Status</div>
-                  <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as 'all' | ClaimStatus)}>
-                    <option value="all">Alle</option>
-                    <option value="supported">supported</option>
-                    <option value="supported_with_caution">supported_with_caution</option>
-                    <option value="open_caution">open_caution</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="claim-list">
-                {filteredClaims.map((claim) => (
-                  <button
-                    key={claim.id}
-                    onClick={() => setSelectedClaim(claim.id)}
-                    className={selectedClaim === claim.id ? 'claim-item active' : 'claim-item'}
-                  >
-                    <div className="claim-meta-row">
-                      <span className={`status-pill ${selectedClaim === claim.id ? 'status-invert' : statusTone(claim.status)}`}>
-                        {claim.status}
+                return (
+                  <div key={section.key} className="nav-group">
+                    <button
+                      className={`nav-group-button ${isActive ? 'active' : ''}`}
+                      onClick={() => setActiveSection(section.key)}
+                    >
+                      <span>{section.title}</span>
+                      <span
+                        className="nav-toggle"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleNav(section.key);
+                        }}
+                      >
+                        {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                       </span>
-                      <span className="claim-id">{claim.id}</span>
-                    </div>
-                    <div className="claim-item-title">{claim.title}</div>
-                    <div className="claim-item-subtitle">{claim.period} · {claim.scope}</div>
-                  </button>
-                ))}
-              </div>
-            </aside>
+                    </button>
 
-            <div className="detail-column">
-              {activeClaim ? (
-                <>
-                  <section className="panel detail-panel">
-                    <div className="panel-header">
-                      <div className="badges-row">
-                        <span className={`status-pill ${statusTone(activeClaim.status)}`}>{activeClaim.status}</span>
-                        <span className="outline-pill">{activeClaim.id}</span>
-                        <span className="outline-pill">Confidence: {confidenceLabel(activeClaim.confidence)}</span>
-                      </div>
-                      <h2>{activeClaim.title}</h2>
-                      <p className="detail-statement">{activeClaim.statement}</p>
-                    </div>
-
-                    <div className="tag-row">
-                      {activeClaim.tags.map((tag) => (
-                        <span key={tag} className="soft-pill">{tag}</span>
-                      ))}
-                    </div>
-
-                    <div className="mini-grid">
-                      <MiniInfo icon={<Clock3 size={15} />} label="Zeitraum" value={activeClaim.period} />
-                      <MiniInfo icon={<MapPin size={15} />} label="Scope" value={activeClaim.scope} />
-                      <MiniInfo icon={<ShieldCheck size={15} />} label="Konfidenz" value={String(activeClaim.confidence)} />
-                    </div>
-
-                    <div className="method-box">
-                      <strong>Methodischer Hinweis:</strong> {activeClaim.notes}
-                    </div>
-                  </section>
-
-                  <div className="evidence-grid">
-                    <section className="panel">
-                      <div className="panel-header compact">
-                        <h3>Evidenz</h3>
-                        <p>Claim-relevante Exzerpte und Kontextbausteine.</p>
-                      </div>
-                      <div className="stack">
-                        {activeEvidence.map((item) => (
-                          <article key={item.id} className="inner-card">
-                            <div className="badges-row small">
-                              <span className="outline-pill">{item.id}</span>
-                              <span className="outline-pill">{item.kind}</span>
-                              <span className="outline-pill">Temporal proximity: {item.temporalProximity}</span>
-                            </div>
-                            <p>{item.text}</p>
-                            <div className="subtle">Quelle: {item.sourceId} · {item.locality}</div>
-                          </article>
+                    {expanded && section.items && (
+                      <div className="nav-sublist">
+                        {section.items.map((item) => (
+                          <div key={item} className="nav-subitem">
+                            {item}
+                          </div>
                         ))}
                       </div>
-                    </section>
-
-                    <section className="panel">
-                      <div className="panel-header compact">
-                        <h3>Quellen zum Claim</h3>
-                        <p>Trägerquellen mit grober Qualitätsklassifikation.</p>
-                      </div>
-                      <div className="stack">
-                        {activeSources.map((src) => (
-                          <article key={src.id} className="inner-card">
-                            <div className="source-topline">
-                              <div>
-                                <div className="source-title">{src.title}</div>
-                                <div className="subtle">{src.id} · {src.type}</div>
-                              </div>
-                              <span className="outline-pill">{src.year}</span>
-                            </div>
-                            <div className="source-grid">
-                              <div><strong>Lokalität:</strong> {src.locality}</div>
-                              <div><strong>Reliability:</strong> {src.reliability}</div>
-                              <div><strong>Relevanz:</strong> {src.relevance}</div>
-                            </div>
-                            <p>{src.summary}</p>
-                          </article>
-                        ))}
-                      </div>
-                    </section>
+                    )}
                   </div>
-                </>
-              ) : (
-                <section className="panel"><p>Keine Claims gefunden.</p></section>
-              )}
+                );
+              })}
             </div>
-          </section>
-        )}
+          </aside>
 
-        {activeTab === 'sources' && (
-          <section className="card-grid three">
-            {sources.map((src) => (
-              <article key={src.id} className="panel">
-                <div className="source-topline">
-                  <span className="outline-pill">{src.id}</span>
-                  <span className="soft-pill">{src.type}</span>
+          <main className="stack">
+            {activeSection === 'overview' && (
+              <section className="panel">
+                <div className="panel-header">
+                  <h2>Projektbeschreibung</h2>
+                  <p className="detail-statement">
+                    Das Interface trennt Claim, Quelle, Evidenz und Forschungslücke ausdrücklich voneinander.
+                    Historische Aussagen erscheinen nicht als abgeschlossene Faktenliste, sondern als
+                    rekonstruierbare und revisionsfähige Aussageeinheiten.
+                  </p>
                 </div>
-                <h3>{src.title}</h3>
-                <p className="subtle">{src.year} · {src.locality}</p>
-                <div className="stack compact">
-                  <div><strong>Reliability:</strong> {src.reliability}</div>
-                  <div><strong>Relevanz:</strong> {src.relevance}</div>
-                </div>
-                <p>{src.summary}</p>
-              </article>
-            ))}
-          </section>
-        )}
 
-        {activeTab === 'gaps' && (
-          <section className="card-grid two">
-            {gaps.map((gap) => (
-              <article key={gap.id} className="panel">
-                <div className="source-topline">
-                  <span className="outline-pill">{gap.id}</span>
-                  <span className={gap.priority === 'hoch' ? 'status-pill tone-danger' : 'status-pill tone-warning'}>{gap.priority}</span>
+                <div className="card-grid two">
+                  <article className="inner-card">
+                    <h3>Funktion</h3>
+                    <p>
+                      Erfassung und Sichtbarmachung institutioneller, sportlicher und finanzieller
+                      Entwicklungen des FC Luzern zwischen 1969 und 1976.
+                    </p>
+                  </article>
+                  <article className="inner-card">
+                    <h3>Begriffslogik</h3>
+                    <p>
+                      Claim ≠ Fakt. Ein Claim ist eine formal formulierte historische Aussage, die
+                      durch Quellen gestützt, aber nicht notwendigerweise endgültig verifiziert ist.
+                    </p>
+                  </article>
                 </div>
-                <h3>{gap.title}</h3>
-                <p>{gap.detail}</p>
-              </article>
-            ))}
-          </section>
-        )}
+              </section>
+            )}
 
-        {activeTab === 'about' && (
-          <section className="panel">
-            <div className="panel-header">
-              <h2>Methodischer Rahmen</h2>
-              <p>Claim-zentriertes Modell für historisch-institutionelle Forschung.</p>
-            </div>
-            <div className="card-grid three text-grid">
-              <article>
-                <h3>1. Source Layer</h3>
-                <p>
-                  Quellen werden zunächst als Trägerobjekte erfasst: Vereinschronik, Zeitung, TV, Kommunalquelle. Aussagekraft und Grenzen werden explizit markiert.
-                </p>
-              </article>
-              <article>
-                <h3>2. Evidence Layer</h3>
-                <p>
-                  Nicht jede Quelle ist bereits Evidenz. Erst exzerpierte, claim-relevante Textstellen oder Sendungsaussagen werden als Evidence-Objekte geführt.
-                </p>
-              </article>
-              <article>
-                <h3>3. Claim Layer</h3>
-                <p>
-                  Claims bleiben von Quellen getrennt. Dadurch werden Unsicherheit, Gegenhypothesen und spätere Revisionen sichtbar statt überschrieben.
-                </p>
-              </article>
-            </div>
-          </section>
-        )}
+            {activeSection === 'claims' && (
+              <section className="claims-grid">
+                <aside className="panel">
+                  <div className="panel-header compact">
+                    <h2>Claim Index</h2>
+                    <p>Filter nach Text oder Evidenzstatus.</p>
+                  </div>
+
+                  <div className="controls">
+                    <label className="search-box">
+                      <Search size={16} />
+                      <input
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Claim, Zeitraum, Tag …"
+                      />
+                    </label>
+
+                    <div className="select-block">
+                      <div className="select-label">Status</div>
+                      <select
+                        value={statusFilter}
+                        onChange={(e) =>
+                          setStatusFilter(e.target.value as 'all' | ClaimStatus)
+                        }
+                      >
+                        <option value="all">Alle</option>
+                        <option value="supported">supported</option>
+                        <option value="supported_with_caution">supported_with_caution</option>
+                        <option value="open_caution">open_caution</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="claim-list">
+                    {filteredClaims.map((claim) => (
+                      <button
+                        key={claim.id}
+                        onClick={() => setSelectedClaim(claim.id)}
+                        className={selectedClaim === claim.id ? 'claim-item active' : 'claim-item'}
+                      >
+                        <div className="claim-meta-row">
+                          <span
+                            className={`status-pill ${
+                              selectedClaim === claim.id
+                                ? 'status-invert'
+                                : statusTone(claim.status)
+                            }`}
+                          >
+                            {claim.status}
+                          </span>
+                          <span className="claim-id">{claim.id}</span>
+                        </div>
+                        <div className="claim-item-title">{claim.title}</div>
+                        <div className="claim-item-subtitle">
+                          {claim.period} · {claim.scope}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </aside>
+
+                <div className="detail-column">
+                  {activeClaim ? (
+                    <section className="panel">
+                      <div className="panel-header">
+                        <div className="badges-row">
+                          <span className={`status-pill ${statusTone(activeClaim.status)}`}>
+                            {activeClaim.status}
+                          </span>
+                          <span className="outline-pill">{activeClaim.id}</span>
+                          <span className="outline-pill">
+                            Evidenzgrad: {confidenceLabel(activeClaim.confidence)}
+                          </span>
+                        </div>
+                        <h2>{activeClaim.title}</h2>
+                        <p className="detail-statement">{activeClaim.statement}</p>
+                      </div>
+
+                      <div className="tag-row">
+                        {activeClaim.tags.map((tag) => (
+                          <span key={tag} className="soft-pill">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="mini-grid">
+                        <MiniInfo icon={<Clock3 size={15} />} label="Zeitraum" value={activeClaim.period} />
+                        <MiniInfo icon={<MapPin size={15} />} label="Scope" value={activeClaim.scope} />
+                        <MiniInfo
+                          icon={<ShieldCheck size={15} />}
+                          label="Konfidenz"
+                          value={String(activeClaim.confidence)}
+                        />
+                      </div>
+
+                      <div className="method-box">
+                        <strong>Methodischer Hinweis:</strong> {activeClaim.notes}
+                      </div>
+                    </section>
+                  ) : (
+                    <section className="panel">
+                      <p>Keine Claims gefunden.</p>
+                    </section>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {activeSection === 'sources' && (
+              <section className="panel">
+                <div className="panel-header">
+                  <h2>Quellen & Provenienz</h2>
+                  <p>
+                    Erfassung identifizierter Primär- und Sekundärquellen mit Angaben zu Lokalität,
+                    Relevanz und methodischer Belastbarkeit.
+                  </p>
+                </div>
+
+                <div className="card-grid three">
+                  {sources.map((src) => (
+                    <article key={src.id} className="inner-card">
+                      <div className="source-topline">
+                        <div>
+                          <div className="source-title">{src.title}</div>
+                          <div className="subtle">
+                            {src.id} · {src.type}
+                          </div>
+                        </div>
+                        <span className="outline-pill">{src.year}</span>
+                      </div>
+
+                      <div className="source-grid">
+                        <div><strong>Lokalität:</strong> {src.locality}</div>
+                        <div><strong>Reliabilität:</strong> {src.reliability}</div>
+                        <div><strong>Relevanz:</strong> {src.relevance}</div>
+                      </div>
+
+                      <p>{src.summary}</p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {activeSection === 'evidence' && (
+              <section className="panel">
+                <div className="panel-header">
+                  <h2>Evidenzzuordnung</h2>
+                  <p>
+                    Sichtbare Zuordnung von Claims zu konkreten Evidenzobjekten. Nicht jede Quelle ist
+                    bereits Evidenz; erst claim-relevante Exzerpte oder Kontextelemente werden hier
+                    als Evidenz geführt.
+                  </p>
+                </div>
+
+                <div className="card-grid two">
+                  {evidence.map((item) => (
+                    <article key={item.id} className="inner-card">
+                      <div className="badges-row small">
+                        <span className="outline-pill">{item.id}</span>
+                        <span className="outline-pill">{item.claimId}</span>
+                        <span className="outline-pill">{item.sourceId}</span>
+                      </div>
+                      <p>{item.text}</p>
+                      <div className="subtle">
+                        {item.kind} · {item.locality} · temporale Nähe: {item.temporalProximity}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {activeSection === 'gaps' && (
+              <section className="panel">
+                <div className="panel-header">
+                  <h2>Forschungslücken</h2>
+                  <p>
+                    Offene Validierungsbereiche, fehlende Dokumente und methodisch relevante Leerräume
+                    des aktuellen Forschungsstands.
+                  </p>
+                </div>
+
+                <div className="card-grid two">
+                  {gaps.map((gap) => (
+                    <article key={gap.id} className="inner-card">
+                      <div className="source-topline">
+                        <span className="outline-pill">{gap.id}</span>
+                        <span
+                          className={
+                            gap.priority === 'hoch'
+                              ? 'status-pill tone-danger'
+                              : 'status-pill tone-warning'
+                          }
+                        >
+                          {gap.priority}
+                        </span>
+                      </div>
+                      <h3>{gap.title}</h3>
+                      <p>{gap.detail}</p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {activeSection === 'method' && (
+              <section className="panel">
+                <div className="panel-header">
+                  <h2>Methodik</h2>
+                  <p>
+                    Claim-zentriertes Modell historischer Rekonstruktion mit expliziter Trennung von
+                    Aussage, Evidenz, Quelle und Unsicherheit.
+                  </p>
+                </div>
+
+                <div className="card-grid three text-grid">
+                  <article>
+                    <h3>1. Source Layer</h3>
+                    <p>
+                      Quellen werden zunächst als Trägerobjekte erfasst: Vereinschronik, Zeitung,
+                      TV-Primärquelle oder kommunale Quelle.
+                    </p>
+                  </article>
+                  <article>
+                    <h3>2. Evidence Layer</h3>
+                    <p>
+                      Erst claim-relevante Exzerpte, Kontextelemente oder paraphrasierte Aussagen
+                      werden als Evidenzobjekte modelliert.
+                    </p>
+                  </article>
+                  <article>
+                    <h3>3. Claim Layer</h3>
+                    <p>
+                      Claims bleiben von den Quellen getrennt. Dadurch werden Unsicherheit,
+                      Gegenhypothesen und spätere Revisionen sichtbar.
+                    </p>
+                  </article>
+                </div>
+
+                <div className="method-box">
+                  <strong>Status des Datensatzes:</strong> Der vorliegende Bestand ist nicht vollständig.
+                  Er ist als ausbaufähiger Forschungsstand zu verstehen und nicht als endgültige Edition.
+                </div>
+              </section>
+            )}
+          </main>
+        </div>
       </div>
     </div>
   );
@@ -758,7 +974,9 @@ function MetricCard({
 }) {
   return (
     <div className="metric-card">
-      <div className="metric-label">{icon} {label}</div>
+      <div className="metric-label">
+        {icon} {label}
+      </div>
       <div className="metric-value">{value}</div>
       <div className="subtle">{detail}</div>
     </div>
@@ -776,7 +994,9 @@ function MiniInfo({
 }) {
   return (
     <div className="mini-card">
-      <div className="metric-label">{icon} {label}</div>
+      <div className="metric-label">
+        {icon} {label}
+      </div>
       <div className="source-title">{value}</div>
     </div>
   );
