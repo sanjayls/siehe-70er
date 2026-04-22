@@ -1,15 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import {
+  AlertTriangle,
   BookOpen,
+  Clock3,
   Database,
   FileText,
+  MapPin,
   Search,
   ShieldCheck,
-  AlertTriangle,
-  Clock3,
-  MapPin,
-  ChevronDown,
-  ChevronRight,
 } from 'lucide-react';
 
 type ClaimStatus = 'supported' | 'supported_with_caution' | 'open_caution';
@@ -455,13 +453,11 @@ const gaps: Gap[] = [
   },
 ];
 
-type NavSection = {
+const navSections: Array<{
   key: SectionKey;
   title: string;
-  items?: string[];
-};
-
-const navSections: NavSection[] = [
+  items: string[];
+}> = [
   {
     key: 'overview',
     title: 'Übersicht',
@@ -517,14 +513,6 @@ export default function App() {
   const [selectedClaim, setSelectedClaim] = useState(claims[0].id);
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | ClaimStatus>('all');
-  const [expandedNav, setExpandedNav] = useState<Record<string, boolean>>({
-    overview: true,
-    claims: true,
-    sources: false,
-    evidence: false,
-    gaps: false,
-    method: false,
-  });
 
   const filteredClaims = useMemo(() => {
     return claims.filter((claim) => {
@@ -546,18 +534,6 @@ export default function App() {
     filteredClaims.find((claim) => claim.id === selectedClaim) ??
     filteredClaims[0] ??
     null;
-
-  const activeClaimEvidence = evidence.filter(
-    (item) => item.claimId === activeClaim?.id
-  );
-
-  const activeClaimSources = sources.filter((src) =>
-    activeClaim?.sourceIds.includes(src.id)
-  );
-
-  function toggleNav(key: string) {
-    setExpandedNav((prev) => ({ ...prev, [key]: !prev[key] }));
-  }
 
   return (
     <div className="page-shell">
@@ -631,6 +607,40 @@ export default function App() {
         </section>
 
         <div className="research-layout">
+          <aside className="panel research-nav">
+            <div className="panel-header compact">
+              <h2>Forschungsraum</h2>
+              <p>Navigation nach Erkenntnisebenen statt nach UI-Komponenten.</p>
+            </div>
+
+            <nav className="nav-list">
+              {navSections.map((section) => {
+                const isActive = activeSection === section.key;
+
+                return (
+                  <div key={section.key} className="nav-group">
+                    <button
+                      type="button"
+                      className={`nav-group-button ${isActive ? 'active' : ''}`}
+                      onClick={() => setActiveSection(section.key)}
+                    >
+                      <span>{section.title}</span>
+                    </button>
+
+                    <div className="nav-sublist">
+                      {section.items.map((item) => (
+                        <div key={item} className="nav-subitem">
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </nav>
+          </aside>
+
+          <main className="stack">
             {activeSection === 'overview' && (
               <section className="panel">
                 <div className="panel-header">
