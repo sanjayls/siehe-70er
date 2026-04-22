@@ -1,5 +1,6 @@
 # FC Luzern Research Explorer
 
+
 A GitHub-ready React/Vite prototype for a claim-centered research interface on the institutional and financial crisis of FC Luzern between 1969 and 1976.
 
 ## Purpose
