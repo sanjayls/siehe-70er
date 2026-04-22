@@ -32,18 +32,7 @@ The current version is based on structured seed data derived from prior source w
 - adjudicated conflict sets
 - direct spreadsheet ingestion
 
-## Run locally
-
-```bash
-npm install
-npm run dev
-```
-
-## Build
-
-```bash
-npm run build
-```
+deploy trigger 2
 
 ## Suggested next steps
 
