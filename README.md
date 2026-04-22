@@ -1,53 +1,81 @@
 # FC Luzern Research Explorer
 
+A GitHub-ready React/Vite prototype for a claim-centred research interface on the institutional, sporting, and financial crisis of FC Luzern between 1969 and 1976.
 
-A GitHub-ready React/Vite prototype for a claim-centered research interface on the institutional and financial crisis of FC Luzern between 1969 and 1976.
+## Status
+
+Prototype.  
+This repository is an interface layer for structured historical research, not yet a complete scholarly database edition.
 
 ## Purpose
 
-This repository is not a fan page and not a finished research database. It is a structured prototype for:
+The project tests a source-critical, claim-centred approach to football history.
 
-- separating claims from sources
-- exposing evidence and uncertainty
-- documenting research gaps explicitly
-- preparing a later research-cut / public-cut architecture
+Instead of presenting a smooth narrative, it separates:
 
-## Current Scope
+- claims
+- evidence
+- source carriers
+- uncertainty
+- research gaps
 
-The prototype includes:
+The objective is to make historical interpretation more transparent, auditable, and extensible.
 
-- a claim explorer
-- a source layer
-- an evidence layer
-- a research gap layer
-- explicit methodological notes
+## Research focus
 
-## Current Limitations
+Current thematic scope:
 
-The current version is based on structured seed data derived from prior source work. It does **not** yet include:
+- FC Luzern, 1969–1976
+- institutional instability
+- financial fragility
+- relegation and recovery dynamics
+- political and municipal context
+- symbolic and media dimensions of the club
 
-- full verbatim quotations from newspapers
-- archival page references
-- transcript-level television evidence
-- adjudicated conflict sets
-- direct spreadsheet ingestion
+## Methodological model
 
-deploy trigger 2
+The prototype is structured around four layers:
 
-## Suggested next steps
+### 1. Source layer
+Carrier objects such as:
 
-1. replace seed data with parsed XLSX/JSON data
-2. add verbatim evidence excerpts with page and date references
-3. add timeline and entity views
-4. add conflict sets and confidence logic
-5. separate research-cut from public-cut output
+- club chronicle
+- newspaper report
+- television report
+- municipal or political source
 
-## Methodological Position
+### 2. Evidence layer
+Claim-relevant excerpts, summaries, or contextual fragments derived from sources.
 
-This prototype follows a claim-centered model:
+### 3. Claim layer
+Historically formulated statements with explicit uncertainty and traceable support.
 
-- **Source Layer**: archival or historiographic carrier objects
-- **Evidence Layer**: claim-relevant excerpts or segments
-- **Claim Layer**: analytical statements separated from raw sources
+### 4. Gap layer
+Missing documents, unresolved questions, and areas requiring stronger validation.
 
-The aim is not narrative compression, but visible epistemic structure.
+## Current limitations
+
+This repository currently has several limitations:
+
+- no full archival citation apparatus
+- no verbatim quote infrastructure
+- no relational backend
+- no source versioning
+- no conflict-resolution workflow
+- no formal peer review
+
+The current build should therefore be understood as a research prototype, not as a final historical authority.
+
+## Technical stack
+
+- React
+- TypeScript
+- Vite
+- GitHub Pages
+
+## Local development
+
+Install dependencies:
+
+```bash
+npm install
